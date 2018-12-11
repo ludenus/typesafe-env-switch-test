@@ -11,72 +11,97 @@ import qa.config.Environment;
 
 public class EnvTest {
 
-    private Logger log = LoggerFactory.getLogger(this.getClass().getCanonicalName());
+  private Logger log = LoggerFactory.getLogger(this.getClass().getCanonicalName());
 
-    private Config config = ConfigFactory.load();
-
-
-    @Test
-    public void checkLoadConfig() {
-        String currentEnvString = config.getString("currentEnv");
-        // Since we do not allow any random string here,
-        // valid options are restricted via EnvName enum
-        EnvName currentEnv = EnvName.valueOf(currentEnvString);
-        Config subConfig = config.getConfig(currentEnv.name());
-        Environment environment = ConfigBeanFactory.create(subConfig, Environment.class);
-        log.info("currentEnv = {}", currentEnv);
-        log.info("environment = {}", environment);
-        // If we are here and no exceptions raised - config was successfully loaded and parsed
-    }
-
-    @Test
-    public void checkDEVconfigValues() {
-        Config subConfig = config.getConfig(EnvName.DEV.name());
-        Environment environment = ConfigBeanFactory.create(subConfig, Environment.class);
-
-        log.info("DEV environment = {}", environment);
-        ReflectionAssert.assertLenientEquals(expectedDEV(), environment);
-    }
+  private Config config = ConfigFactory.load();
 
 
-    @Test
-    public void checkTESTconfigValues() {
-        Config subConfig = config.getConfig(EnvName.TEST.name());
-        Environment environment = ConfigBeanFactory.create(subConfig, Environment.class);
+  @Test
+  public void checkLoadConfig() {
+    String currentEnvString = config.getString("currentEnv");
+    // Since we do not allow any random string here,
+    // valid options are restricted via EnvName enum
+    EnvName currentEnv = EnvName.valueOf(currentEnvString);
+    Config subConfig = config.getConfig(currentEnv.name());
+    Environment environment = ConfigBeanFactory.create(subConfig, Environment.class);
+    log.info("currentEnv = {}", currentEnv);
+    log.info("environment = {}", environment);
+    // If we are here and no exceptions raised - config was successfully loaded and parsed
+  }
 
-        log.info("TEST environment = {}", environment);
-        ReflectionAssert.assertLenientEquals(expectedTEST(), environment);
-    }
+  @Test
+  public void checkDEVconfigValues() {
+    Config subConfig = config.getConfig(EnvName.DEV.name());
+    Environment environment = ConfigBeanFactory.create(subConfig, Environment.class);
 
+    log.info("DEV environment = {}", environment);
+    ReflectionAssert.assertLenientEquals(expectedDEV(), environment);
+  }
 
-    private Environment expectedDEV() {
+  @Test
+  public void checkTESTconfigValues() {
+    Config subConfig = config.getConfig(EnvName.TEST.name());
+    Environment environment = ConfigBeanFactory.create(subConfig, Environment.class);
 
-        Environment expected = new Environment();
-        expected.CDN = new AddressHolder();
-        expected.CDN.protocol = "http";
-        expected.CDN.host = "dev-cdn.ee";
-        expected.CDN.port = 123;
-        expected.KEK = new AddressHolder();
-        expected.KEK.protocol = "http";
-        expected.KEK.host = "kek2.ipo";
-        expected.KEK.port = 125;
+    log.info("TEST environment = {}", environment);
+    ReflectionAssert.assertLenientEquals(expectedTEST(), environment);
+  }
 
-        return expected;
-    }
+  @Test
+  public void checkStringLocator() {
+    String host = config.getString("DEV.CDN.host");
+    log.info("host={}", host);
 
-    private Environment expectedTEST() {
+  }
 
-        Environment expected = new Environment();
-        expected.CDN = new AddressHolder();
-        expected.CDN.protocol = "http";
-        expected.CDN.host = "test-cdn.ee";
-        expected.CDN.port = 13;
-        expected.KEK = new AddressHolder();
-        expected.KEK.protocol = "http";
-        expected.KEK.host = "test-kek.ee";
-        expected.KEK.port = 1337;
+  private Environment expectedDEV() {
 
-        return expected;
-    }
+    Environment expected = new Environment();
+
+    expected.CDN = new AddressHolder();
+    expected.CDN.protocol = config.getString("defaultProtocol");
+    expected.CDN.host = config.getString("defaultHost");
+    expected.CDN.port = 30086;
+    expected.CDN.authHeaderValue = config.getString("defaultAuthHeaderValue");
+
+    expected.KEK = new AddressHolder();
+    expected.KEK.protocol = "https";
+    expected.KEK.host = "petstore.swagger.io/v2/store/inventory";
+    expected.KEK.port = 80;
+    expected.KEK.authHeaderValue = config.getString("defaultAuthHeaderValue");
+
+    expected.AMQP = new AddressHolder();
+    expected.AMQP.protocol = config.getString("defaultProtocol");
+    expected.AMQP.host = config.getString("defaultHost");
+    expected.AMQP.port = 30073;
+    expected.AMQP.authHeaderValue = config.getString("defaultAuthHeaderValue");
+
+    expected.PVC = new AddressHolder();
+    expected.PVC.protocol = config.getString("defaultProtocol");
+    expected.PVC.host = config.getString("defaultHost");
+    expected.PVC.port = 30092;
+    expected.PVC.authHeaderValue = config.getString("defaultAuthHeaderValue");
+
+    expected.SPM = new AddressHolder();
+    expected.SPM.protocol = config.getString("defaultProtocol");
+    expected.SPM.host = config.getString("defaultHost");
+    expected.SPM.port = 30071;
+    expected.SPM.authHeaderValue = config.getString("defaultAuthHeaderValue");
+
+    return expected;
+  }
+
+  private Environment expectedTEST() {
+
+    Environment expected = new Environment();
+
+    expected.CDN = new AddressHolder();
+    expected.CDN.protocol = config.getString("defaultProtocol");
+    expected.CDN.host = "test-erk.ee";
+    expected.CDN.port = 13;
+    expected.CDN.authHeaderValue = config.getString("defaultAuthHeaderValue");
+
+    return expected;
+  }
 
 }
